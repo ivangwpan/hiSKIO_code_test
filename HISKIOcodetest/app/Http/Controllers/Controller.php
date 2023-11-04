@@ -10,42 +10,32 @@ use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Support\Facades\Auth;
 
+/**
+ * 題目三：
+請您使用 Laravel 建立一個 API 系統，此系統需具備以下功能：
+
+會員登入、註冊，至少需 account, password 欄位。
+帳戶存款的 CRUD 功能，至少需要兩張表。
+accounts：紀錄使用者帳號、目前存款餘額。
+balances：紀錄使用者存取款紀錄。
+畫面不需特別美化，至少需簡單呈現以下資料，其他資料可自行評估後增加！
+
+/accounts
+
+用戶 ID	帳號	存款餘額	詳細資料
+1	aaa	50	a link -> /accounts/1
+/accounts/1
+
+金額	存款餘額	時間
+100	100	2022/05/01 00:00:00
+-100	0	2022/05/02 00:00:00
+50	50	2022/05/03 00:00:00
+切記：每人的帳戶存款餘額不能為負值
+ */
 class Controller extends BaseController
 {
     use AuthorizesRequests, ValidatesRequests;
     
-    // 排列組合推導
-    function ladder($n)
-    {
-        function H($m, $n)
-        {
-            function factorial($num)
-            {
-                if ($num < 0) {
-                    echo "不接受負數";
-                } elseif ($num == 0) {
-                    return 1;
-                } else {
-                    $fact = 1;
-                    while ($num > 0) {
-                        $fact *= $num;
-                        $num--;
-                    }
-                    return $fact;
-                }
-            }
-            return factorial($m + $n - 1) / (factorial($n) * factorial($m - 1));
-        }
-
-        $solution = 0;
-        for ($a = 0; $a <= $n / 2; $a++) {
-            $b = $n - 2 * $a;
-            $solution += H($b + 1, $a);
-        }
-
-        return intval($solution);
-    }
-
     // 動態記憶演算法
     function climbStairs($n)
     {
@@ -70,8 +60,7 @@ class Controller extends BaseController
     // welcome首頁
     public function Cart()
     {
-        $n = 50;
-        $ways = $this->ladder($n);
+        $n = 5;
         $ways = $this->climbStairs($n);
         return view('welcome', compact('ways'));
     }
