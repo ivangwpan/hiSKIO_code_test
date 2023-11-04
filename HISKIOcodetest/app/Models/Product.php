@@ -12,7 +12,7 @@ class Product extends Model
     public $quantity;
     public $discountAmount;
     public $totalPrice;
-    public $discount;
+    public $discountPercentage;
 
     public function __construct($name, $price, $quantity)
     {
@@ -21,24 +21,34 @@ class Product extends Model
         $this->quantity = $quantity;
         $this->discountAmount = 0;
         $this->totalPrice = $this->price * $this->quantity;
-        $this->discount = null;
+        $this->discountPercentage = 0;
     }
 
-    public function applyDiscount($discountAmount)
+    public function applyDiscountAmount($discountAmount)
     {
-        if ($this->discount) {
-            echo "{$this->name} 已有使用優惠.<br>";
+        if ($this->discountPercentage > 0) {
+            echo "{$this->name} 已有使用折扣百分比，無法同時折扣價格。<br>";
         } else {
             $this->discountAmount = $discountAmount;
-            $this->totalPrice = ($this->price - $discountAmount) * $this->quantity;
-            $this->discount = "優惠金額 $discountAmount 已使用到 {$this->name}.";
+            $this->totalPrice = max(0, $this->price - $discountAmount) * $this->quantity;
+        }
+    }
+
+    public function applyDiscountPercentage($discountPercentage)
+    {
+        if ($this->discountAmount > 0) {
+            echo "{$this->name} 已有使用折扣價格，無法同時折扣百分比。<br>";
+        } else {
+            $this->discountPercentage = $discountPercentage;
+            $discountAmount = $this->price * $discountPercentage;
+            $this->totalPrice = max(0, $this->price - $discountAmount) * $this->quantity;
         }
     }
 
     public function removeDiscount()
     {
         $this->discountAmount = 0;
+        $this->discountPercentage = 0;
         $this->totalPrice = $this->price * $this->quantity;
-        $this->discount = null;
     }
 }

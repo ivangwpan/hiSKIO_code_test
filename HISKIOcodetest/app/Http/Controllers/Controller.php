@@ -13,30 +13,70 @@ use Illuminate\Support\Facades\Auth;
 class Controller extends BaseController
 {
     use AuthorizesRequests, ValidatesRequests;
+    
+    // 排列組合推導
+    function ladder($n)
+    {
+        function H($m, $n)
+        {
+            function factorial($num)
+            {
+                if ($num < 0) {
+                    echo "不接受負數";
+                } elseif ($num == 0) {
+                    return 1;
+                } else {
+                    $fact = 1;
+                    while ($num > 0) {
+                        $fact *= $num;
+                        $num--;
+                    }
+                    return $fact;
+                }
+            }
+            return factorial($m + $n - 1) / (factorial($n) * factorial($m - 1));
+        }
 
-    function climbStairs($n) {
-        if ($n <= 2) {
-            return $n;
+        $solution = 0;
+        for ($a = 0; $a <= $n / 2; $a++) {
+            $b = $n - 2 * $a;
+            $solution += H($b + 1, $a);
         }
-    
-        $dp = array_fill(0, $n + 1, 0);
-        $dp[1] = 1;
-        $dp[2] = 2;
-    
-        for ($i = 3; $i <= $n; $i++) {
-            $dp[$i] = $dp[$i - 1] + $dp[$i - 2];
-        }
-    
-        return $dp[$n];
+
+        return intval($solution);
     }
+
+    // 動態記憶演算法
+    function climbStairs($n)
+    {
+        if ($n < 1) return 0;
+        if ($n === 1) return 1;
+        if ($n === 2) return 2;
+
+        $current = 2;
+        $prev = 1;
+        $sum = 0;
+
+        for ($i = 3; $i <= $n; $i++) {
+            $sum = $current + $prev;
+            $prev = $current;
+            $current = $sum;
+        }
+
+        return $current;
+    }
+
     
+    // welcome首頁
     public function Cart()
     {
-        $n = 50; 
-        $ways = $this->climbStairs($n); 
+        $n = 50;
+        $ways = $this->ladder($n);
+        $ways = $this->climbStairs($n);
         return view('welcome', compact('ways'));
     }
 
+    //存款按鈕功能
     public function deposit(Request $request)
     {
         $request->validate([
@@ -56,6 +96,7 @@ class Controller extends BaseController
         return redirect(route('dashboard'));
     }
 
+    // 提款按鈕功能
     public function withdraw(Request $request)
     {
         $user = Auth::user();
