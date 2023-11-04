@@ -2,52 +2,83 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Balance;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Routing\Controller as BaseController;
+use Illuminate\Support\Facades\Auth;
 
 class Controller extends BaseController
 {
     use AuthorizesRequests, ValidatesRequests;
 
+    function climbStairs($n) {
+        if ($n <= 2) {
+            return $n;
+        }
+    
+        $dp = array_fill(0, $n + 1, 0);
+        $dp[1] = 1;
+        $dp[2] = 2;
+    
+        for ($i = 3; $i <= $n; $i++) {
+            $dp[$i] = $dp[$i - 1] + $dp[$i - 2];
+        }
+    
+        return $dp[$n];
+    }
+    
     public function Cart()
     {
-        return view('welcome');
+        $n = 50; 
+        $ways = $this->climbStairs($n); 
+        return view('welcome', compact('ways'));
     }
 
-    public function deposit(Request $request, User $user)
+    public function deposit(Request $request)
     {
-        $amount = $request->input('amount');
+        $request->validate([
+            'money' => 'required|min:0|numeric'
+        ]);
+        $user = Auth::user();
+        $passedAccounts = $user->accounts;
+        $currentAccounts = $passedAccounts + $request->money;
+        Balance::create([
+            'user_id' => $request->user()->id,
+            'current_balance' => $currentAccounts,
+            'passed_balance' => $passedAccounts,
+        ]);
 
-        if ($amount <= 0) {
-            return response()->json(['message' => 'Amount must be greater than 0'], 400);
-        }
+        $user->update(['accounts' => $currentAccounts]);
 
-        $user->balance += $amount;
-        $user->save();
-
-
-        return response()->json(['message' => 'Deposit successful', 'new_balance' => $user->balance]);
+        return redirect(route('dashboard'));
     }
 
-    public function withdraw(Request $request, User $user)
+    public function withdraw(Request $request)
     {
-        $amount = $request->input('amount');
+        $user = Auth::user();
+        $passedAccounts = $user->accounts;
+        $request->validate([
+            'money' => [
+                'required',
+                'numeric',
+                'min:0',
+                'max:' . $passedAccounts,
+            ]
+        ]);
 
-        if ($amount <= 0) {
-            return response()->json(['message' => 'Amount must be greater than 0'], 400);
-        }
+        $currentAccounts = $passedAccounts - $request->money;
 
-        if ($amount > $user->balance) {
-            return response()->json(['message' => 'Insufficient balance'], 400);
-        }
+        Balance::create([
+            'user_id' => $request->user()->id,
+            'current_balance' => $currentAccounts,
+            'passed_balance' => $passedAccounts,
+        ]);
 
-        $user->balance -= $amount;
-        $user->save();
+        $user->update(['accounts' => $currentAccounts]);
 
-
-        return response()->json(['message' => 'Withdrawal successful', 'new_balance' => $user->balance]);
+        return redirect(route('dashboard'));
     }
 }

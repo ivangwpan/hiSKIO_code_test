@@ -17,6 +17,9 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', [Controller::class, 'Cart'])->name('Cart');
 
+Route::post('/deposit', [Controller::class, ('deposit')])->name('deposit');
+Route::post('/withdraw', [Controller::class, ('withdraw')])->name('withdraw');
+
 Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');

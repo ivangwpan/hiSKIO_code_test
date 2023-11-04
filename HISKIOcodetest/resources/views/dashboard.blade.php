@@ -10,8 +10,18 @@
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900 dark:text-gray-100 border">
                     帳戶狀態
-                    <button type="button" class="bg-red">存款</button>
-                    <button type="button" class="bg-red">提款</button>
+                    <form action="{{ route('deposit') }}" method="POST">
+                        @csrf
+                        <input type="number" name="money" class="form-control text-black" placeholder="輸入存款金額" required
+                            min=0>
+                        <button type="submit" class="bg-red">存款</button>
+                    </form>
+                    <form action="{{ route('withdraw') }}" method="POST">
+                        @csrf
+                        <input type="number" name="money" class="form-control text-black" placeholder="輸入提款金額"
+                            required min=0>
+                        <button type="submit" class="bg-red">提款</button>
+                    </form>
                     {{-- {{ __("You're logged in!") }} --}}
                     <table class="table w-100 border m-auto">
                         <thead class="border">
@@ -50,8 +60,15 @@
                         <tbody>
                             @foreach ($sortedBalances as $balance)
                                 <tr>
-                                    <th class="border">${{ $balance->current_balance }}</th>
-                                    <td class="border">${{ $balance->passed_balance }}</td>
+                                    <th class="border">
+                                        @if ($balance->current_balance - $balance->passed_balance < 0)
+                                            提款
+                                        @else
+                                            存款
+                                        @endif
+                                        ${{ abs($balance->current_balance - $balance->passed_balance) }}
+                                    </th>
+                                    <td class="border">${{ $balance->current_balance }}</td>
                                     <td class="border">{{ $balance->created_at }}</td>
                                 </tr>
                             @endforeach
